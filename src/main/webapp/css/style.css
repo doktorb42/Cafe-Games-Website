@@ -1,0 +1,102 @@
+body {
+    background: radial-gradient(circle at center, #121212 0%, #050505 100%);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    margin:0;
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 480px;
+    gap:15px;
+    padding:25px 20px 35px 20px;
+    background: #1E1E1E;
+    text-align: center;
+    border: #D4AF37 solid 1px;
+    box-shadow: 0 0 20px rgba(212,175,55,0.25);
+    border-radius:12px;
+    
+}
+.header {
+    color: #FFD700;
+    font-size: 24px;
+    padding: 5px;
+    border-bottom: #FFD700 solid 1px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255,215,0,0.35);
+}
+.inputs {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.inputs input {
+    border:1px solid #444;
+    width:50%;
+    border-radius: 5px;
+    font-size: 18px;
+    padding: 10px;
+    margin-bottom: 20px;
+    transition:0.3s;
+    background: #2A2A2A;
+    color: #F5F5F5;
+}
+.inputs input:focus {
+    border:1px solid #D4AF37;
+    box-shadow:0 0 8px rgba(212,175,55,0.3);
+}
+
+.inputs input::placeholder{
+    
+    color: #F5F5F5;
+}
+.button input {
+    border: 2px solid #1E1E1E;
+    border-radius:8px;
+    font-size: 18px;
+    padding: 10px;
+    background: #8B0000;
+    width: 50%;
+    color: #F5F5F5;
+    cursor: pointer;
+    font-weight:bold;
+    transition:0.3s;
+}
+
+
+.button input:hover {
+    background:#d10000;
+    transform:scale(1.03);
+}
+.casino-icon{
+    color:#D4AF37;
+    font-size:26px;
+    margin:10px 0 20px 0;
+    letter-spacing:8px;
+    text-shadow:0 0 10px rgba(212,175,55,0.3);
+}
+
+
+
+.login-link {
+    margin-top: 15px;
+    color: #F5F5F5;
+    font-size: 17px;
+    text-decoration: none;
+    transition:0.3s;
+    padding: 5px;
+}
+.login-link a {
+    color: #D4AF37;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.error-message p {
+    color: #FF6347;
+    font-size: 20px;
+    margin-top: 10px;
+    text-shadow:0 0 5px rgba(255,99,71,0.3);
+}

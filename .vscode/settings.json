@@ -1,0 +1,16 @@
+{
+    "java.autobuild.enabled": true,
+    "java.debug.settings.hotCodeReplace": "auto",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 800,
+
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "\\.(jsp|html|css|js)$",
+                "cmd": "xcopy /E /Y /I D:\\java-projekts\\kasyno\\src\\main\\webapp D:\\java-projekts\\kasyno\\target\\ROOT"
+            }
+        ]
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
