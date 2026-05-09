@@ -62,28 +62,28 @@ public class Querysql {
 
 
     public void saveUser(User user) throws SQLException {
-        String sql = "INSERT INTO users(username,password,nickname,balance) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO users(login,password,username,balance) VALUES (?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, user.GetUsername());
+        ps.setString(1, user.GetLogin());
         ps.setString(2, user.GetPasswordHash());
-        ps.setString(3, user.GetNickname());
+        ps.setString(3, user.GetUsername());
         ps.setInt(4, user.GetBalance());
         ps.executeUpdate();
         ps.close();
     }
-    public User findByUsername(String username) throws SQLException {
-        String sql = "SELECT * from users WHERE username = ?";
+    public User findByLogin(String login) throws SQLException {
+        String sql = "SELECT * from users WHERE login = ?";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, username);
+        ps.setString(1, login);
         ResultSet rs = ps.executeQuery();
 
         if (rs.next()){
             Integer id = rs.getInt("id");
-            String nickname = rs.getString("nickname");
             String usernameFromDb = rs.getString("username");
+            String loginFromDb = rs.getString("login");
             String password = rs.getString("password");
             Integer balance = rs.getInt("balance");
-            User user = new User(id,usernameFromDb,password,nickname,balance);
+            User user = new User(id, loginFromDb, password, usernameFromDb, balance);
             ps.close();
             return user;
         }
@@ -98,18 +98,18 @@ public class Querysql {
         ps.executeUpdate();
         ps.close();
     }
-    public void updateUsersNickname(String Nickname, Integer id) throws SQLException{
-        String sql = "UPDATE users SET nickname = ? WHERE id = ?";
+    public void updateUsersUsername(String username, Integer id) throws SQLException {
+        String sql = "UPDATE users SET username = ? WHERE id = ?";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, Nickname);
+        ps.setString(1, username);
         ps.setInt(2, id);
         ps.executeUpdate();
         ps.close();
     }
-    public boolean checkUsername(String username) throws SQLException{
-        String sql = "SELECT * FROM users WHERE username=?";
+    public boolean checkLogin(String login) throws SQLException {
+        String sql = "SELECT * FROM users WHERE login=?";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, username);
+        ps.setString(1, login);
         ResultSet rs = ps.executeQuery();
         if(rs.next()){
             ps.close();
@@ -118,10 +118,10 @@ public class Querysql {
         ps.close();
         return false;
     }
-    public boolean checkNickname(String nickname) throws SQLException{
-        String sql = "SELECT * FROM users WHERE nickname=?";
+    public boolean checkUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM users WHERE username=?";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, nickname);
+        ps.setString(1, username);
         ResultSet rs = ps.executeQuery();
         if(rs.next()){
             ps.close();

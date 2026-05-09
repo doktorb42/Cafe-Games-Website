@@ -7,7 +7,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasyno</title>
+    <title>Cafejka Internetowa</title>
     <link rel="stylesheet" href="css/MainStyle.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
@@ -15,7 +15,7 @@
     <div class="container">
         <div class="header">
             <% User user = (User) request.getAttribute("loggedUser"); %>
-            <h1>Witaj <%= user.GetNickname() %></h1>
+            <h1>Witaj <%= user.GetUsername() %></h1>
         </div>
 
         <div class="content">

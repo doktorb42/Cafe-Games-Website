@@ -6,7 +6,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasyno</title>
+    <title>Cafejka Internetowa</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
@@ -18,7 +18,7 @@
         <div class="casino-icon">♠ ♥ ♦ ♣</div>
         <form action="register" method="post" accept-charset="UTF-8">
             <div class="inputs">
-                <input type="text" placeholder="Nazwa użytkownika" name="username">
+                <input type="text" placeholder="Login" name="login">
                 <input type="password" placeholder="Hasło" name="password">
                 <input type="password" placeholder="Powtórz hasło" name="apassword">
             </div>

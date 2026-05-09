@@ -66,13 +66,13 @@ public class server  extends HttpServlet{
             return;
 
         }
-        if (path.equals("/nickname")){
+        if (path.equals("/username")){
              if (session == null || session.getAttribute("loggedUser") == null) {
                 res.sendRedirect("login");
                 return;
             }
 
-            forward(req, res, "nickname.jsp");
+            forward(req, res, "username.jsp");
             return;
         }
 
@@ -120,7 +120,7 @@ public class server  extends HttpServlet{
                 return;
             }
 
-            if (path.equals("/nickname")) {
+            if (path.equals("/username")) {
                 handleUsername(req, res, database);
                 return;
             }

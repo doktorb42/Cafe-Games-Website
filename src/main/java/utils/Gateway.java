@@ -18,8 +18,8 @@ public class Gateway {
         if(user== null){
             return false;
         }
-        if (user.GetNickname().equals("")){
-            res.sendRedirect("nickname");
+        if (user.GetUsername() == null || user.GetUsername().isBlank()) {
+            res.sendRedirect("username");
             return false;
 
         } 

@@ -22,23 +22,23 @@ public class Handleusername {
 
         User user = (User) session.getAttribute("loggedUser");
 
-        String nickname = req.getParameter("Nickname");
+        String username = req.getParameter("username");
 
-        if (nickname == null || nickname.isBlank()) {
-            req.setAttribute("errorMessage", "Wprowadź nickname");
-            forward(req, res, "nickname.jsp");
+        if (username == null || username.isBlank()) {
+            req.setAttribute("errorMessage", "Wprowadź nazwę użytkownika");
+            forward(req, res, "username.jsp");
             return;
         }
 
-        if (database.checkNickname(nickname)) {
+        if (database.checkUsername(username)) {
             req.setAttribute("errorMessage", "Nazwa już zajęta");
-            forward(req, res, "nickname.jsp");
+            forward(req, res, "username.jsp");
             return;
         }
 
-        database.updateUsersNickname(nickname, user.GetId());
+        database.updateUsersUsername(username, user.GetId());
 
-        User updatedUser = database.findByUsername(user.GetUsername());
+        User updatedUser = database.findByLogin(user.GetLogin());
 
         session.setAttribute("loggedUser", updatedUser);
 

@@ -6,19 +6,19 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasyno</title>
+    <title>Cafejka Internetowa</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Wprowadź nazwę użytkownika</h1>
+            <h1>Wprowadź login</h1>
         </div>
         <div class="casino-icon">♠ ♥ ♦ ♣</div>
         <form action="login" method="post" accept-charset="UTF-8">
             <div class="inputs">
-                <input type="text" placeholder="Nazwa użytkownika" name="username">
+                <input type="text" placeholder="Login" name="login">
                 <input type="password" placeholder="Hasło" name="password">
             </div>
             <div class="login-link">

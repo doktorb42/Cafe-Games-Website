@@ -12,14 +12,14 @@ public class Handleregister {
     public static void handleRegister(HttpServletRequest req, HttpServletResponse res, Querysql database)
             throws Exception {
 
-        String username = req.getParameter("username");
+        String login = req.getParameter("login");
         String password = req.getParameter("password");
         String apassword = req.getParameter("apassword");
         String terms = req.getParameter("terms");
         String age = req.getParameter("age");
 
-        if (username == null || username.isBlank()) {
-            req.setAttribute("errorMessage", "Wprowadź nazwę użytkownika");
+        if (login == null || login.isBlank()) {
+            req.setAttribute("errorMessage", "Wprowadź login");
             forward(req, res, "register.jsp");
             return;
         }
@@ -65,21 +65,21 @@ public class Handleregister {
             return;
         }
 
-        if (database.checkUsername(username)) {
-            req.setAttribute("errorMessage", "Nazwa użytkownika już istnieje");
+        if (database.checkLogin(login)) {
+            req.setAttribute("errorMessage", "Login już istnieje");
             forward(req, res, "register.jsp");
             return;
         }
 
-        User tempUser = new User(username, password, "");
+        User tempUser = new User(login, password, "");
 
         database.saveUser(tempUser);
 
-        User savedUser = database.findByUsername(username);
+        User savedUser = database.findByLogin(login);
 
         HttpSession session = req.getSession();
         session.setAttribute("loggedUser", savedUser);
 
-        res.sendRedirect("nickname");
+        res.sendRedirect("username");
     }
 }

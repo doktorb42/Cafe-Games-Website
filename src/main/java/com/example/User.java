@@ -5,60 +5,59 @@ import org.mindrot.jbcrypt.BCrypt;
 
 public class User {
     private Integer id;
+    private String login;
     private String username;
-    private String nickname;
     private String password;
     private Integer balance;
 
 
-    /// Do rejestracji  ////
-    public User(String Username, String plainPassword, String Nickname){
+    // Do rejestracji
+    public User(String login, String plainPassword, String username) {
         this.id = 0;
-        this.username = Username;
+        this.login = login;
         this.password = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
-        this.nickname = Nickname;
+        this.username = username;
         this.balance = 1000;
     }
-    
-    /// Z bazy danych  ////
-    public User(Integer id, String Username, String passwordHash, String Nickname, Integer Balance){
-        this.id=id;
-        this.username = Username;
+
+    // Z bazy danych
+    public User(Integer id, String login, String passwordHash, String username, Integer balance) {
+        this.id = id;
+        this.login = login;
+        this.username = username;
         this.password = passwordHash;
-        this.nickname = Nickname;
-        this.balance = Balance;
+        this.balance = balance;
     }
 
-    // GETTERY ////
-    public Integer GetId(){
+    // GETTERY
+    public Integer GetId() {
         return id;
     }
-    public String GetUsername(){
+    public String GetLogin() {
+        return login;
+    }
+    public String GetUsername() {
         return username;
     }
-    public String GetPasswordHash(){
+    public String GetPasswordHash() {
         return password;
     }
-    public Integer GetBalance(){
+    public Integer GetBalance() {
         return balance;
     }
-    public String GetNickname(){
-        return nickname;
-    }
-    /// SETTER ////
-    public void SetNewPassword(String plainPassword){
+    // SETTER
+    public void SetNewPassword(String plainPassword) {
         this.password = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
     }
 
-    /// Funkcje ///
-    public void addBalance(Integer amount){
-        this.balance +=amount;
+    // Funkcje
+    public void addBalance(Integer amount) {
+        this.balance += amount;
     }
-    public void UpdateNickname(String Nickname){
-        this.nickname=Nickname;
+    public void UpdateUsername(String username) {
+        this.username = username;
     }
-    public boolean CheckPassword(String plainpassword){
+    public boolean CheckPassword(String plainpassword) {
         return BCrypt.checkpw(plainpassword, this.password);
     }
-    
 }

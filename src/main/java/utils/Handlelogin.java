@@ -12,19 +12,19 @@ public class Handlelogin {
     public static void handleLogin(HttpServletRequest req, HttpServletResponse res, Querysql database)
             throws Exception {
 
-        String username = req.getParameter("username");
+        String login = req.getParameter("login");
         String password = req.getParameter("password");
 
-        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+        if (login == null || login.isBlank() || password == null || password.isBlank()) {
             req.setAttribute("errorMessage", "Wprowadź login i hasło");
             forward(req, res, "login.jsp");
             return;
         }
 
-        User user = database.findByUsername(username);
+        User user = database.findByLogin(login);
 
         if (user == null || !user.CheckPassword(password)) {
-            req.setAttribute("errorMessage", "Błędna nazwa użytkownika lub hasło");
+            req.setAttribute("errorMessage", "Błędny login lub hasło");
             forward(req, res, "login.jsp");
             return;
         }
@@ -32,8 +32,8 @@ public class Handlelogin {
         HttpSession session = req.getSession();
         session.setAttribute("loggedUser", user);
 
-        if (user.GetNickname() == null || user.GetNickname().isBlank()) {
-            res.sendRedirect("nickname");
+        if (user.GetUsername() == null || user.GetUsername().isBlank()) {
+            res.sendRedirect("username");
             return;
         }
 
