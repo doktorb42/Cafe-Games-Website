@@ -41,7 +41,6 @@ public class Handleregister {
             forward(req, res, "register.jsp");
             return;
         }
-
         if (!password.matches(".*[A-Z].*")) {
             req.setAttribute("errorMessage", "Hasło musi zawierać dużą literę");
             forward(req, res, "register.jsp");

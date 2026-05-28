@@ -1,12 +1,11 @@
 package com.example;
 
 public class RouletteMethod {
-    public static int roulette(String choice, int number){
-        int winMultiplier=-1;
-        int randomNumber=(int)(Math.random()*37);
-        number=0;
+    public static int roulette(String choice, int number, int randomnum){
+        int winMultiplier = 0;
+        int randomNumber=randomnum;
         if(choice.equals("black")){
-            if(isBlank(randomNumber)){
+            if(isBlack(randomNumber)){
                 winMultiplier=2;
             }
         }
@@ -15,13 +14,13 @@ public class RouletteMethod {
                 winMultiplier=2;
             }
         }
-        if(choice.equals("even")){
+        if(randomNumber != 0 && choice.equals("even")){
             if(randomNumber%2==0){
                 winMultiplier=2;
             }
 
         }
-        if(choice.equals("odd")){
+        if(randomNumber != 0 && choice.equals("odd")){
             if(randomNumber%2==1){
                 winMultiplier=2;
             }
@@ -43,7 +42,7 @@ public class RouletteMethod {
         }
         return false;
     }
-    private static boolean isBlank(int number){
-        return !isRed(number);
+    private static boolean isBlack(int number){
+        return number != 0 && !isRed(number);
     }
 }

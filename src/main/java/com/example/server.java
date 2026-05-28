@@ -30,70 +30,60 @@ public class server  extends HttpServlet{
         String context = req.getContextPath();
         String path = uri.substring(context.length());
         HttpSession session = req.getSession(false);
-        if (path.equals("/") || path.isEmpty()){
-            if(!handleCheck(req,res,session)){
+        User user;
+        switch (path) {
+            case "/":
+                if(!handleCheck(req,res,session)){
+                    res.sendRedirect("login");
+                    return;
+                }
+                user = (User) session.getAttribute("loggedUser");
+                req.setAttribute("loggedUser", user);
+                forward(req, res, "main.jsp");
+                return;
+
+            case "/roulette":
+                if(!handleCheck(req,res,session)){
+                    res.sendRedirect("login");
+                    return;
+                }else{
+
+                user = (User) session.getAttribute("loggedUser");
+                }
+                req.setAttribute("loggedUser", user);
+                forward(req, res, "roulette.jsp");
+                return;
+            case "/register":
+                forward(req, res, "register.jsp");
+                return;
+            case "/login":
+                forward(req, res, "login.jsp");
+                return;
+            case "/username":
+                if (session == null || session.getAttribute("loggedUser") == null) {
+                    res.sendRedirect("login");
+                    return;
+                }
+
+                forward(req, res, "username.jsp");
+                return;
+            case "/logout":
+                if (session != null) {
+                    session.invalidate();
+                }
+
                 res.sendRedirect("login");
                 return;
-            }
-            User user = (User) session.getAttribute("loggedUser");
-            req.setAttribute("loggedUser", user);
-            forward(req, res, "main.jsp");
-            return;
-
-            
-            /// register
-            /// 
-        }
-        if (path.equals("/roulette")){
-            if(!handleCheck(req,res,session)){
-                res.sendRedirect("login");
+            default:
+                RequestDispatcher defaultDispatcher = getServletContext().getNamedDispatcher("default");
+                
+                if (defaultDispatcher != null) {
+                    defaultDispatcher.forward(req, res);
+                    return;
+                }
+                res.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            User user = (User) session.getAttribute("loggedUser");
-            req.setAttribute("loggedUser", user);
-            forward(req, res, "roulette.jsp");
-            return;
-
-        }
-        if (path.equals("/register")){   
-            forward(req, res, "register.jsp");
-            return;
-
-            /// login
-        }
-        if (path.equals("/login")){
-            forward(req, res, "login.jsp");
-            return;
-
-        }
-        if (path.equals("/username")){
-             if (session == null || session.getAttribute("loggedUser") == null) {
-                res.sendRedirect("login");
-                return;
-            }
-
-            forward(req, res, "username.jsp");
-            return;
-        }
-
-        if (path.equals("/logout")) {
-            if (session != null) {
-                session.invalidate();
-            }
-
-            res.sendRedirect("login");
-            return;
-        }
-
-        
-        // Css dispatcher
-        RequestDispatcher defaultDispatcher = getServletContext().getNamedDispatcher("default");
-        
-        if (defaultDispatcher != null) {
-            defaultDispatcher.forward(req, res);
-            return;
-        }
-        res.sendError(HttpServletResponse.SC_NOT_FOUND);
 
     }
     @Override
@@ -109,60 +99,112 @@ public class server  extends HttpServlet{
         try (Connection conn = Databaseconnection.getConnection()) {
             
             Querysql database = new Querysql(conn);
+            switch (path) {
+                case "/register":
+                    handleRegister(req, res, database);
+                    return;
+                case "/login":
+                    handleLogin(req, res, database);
+                    return;
+                case "/username":
+                    handleUsername(req, res, database);
+                    return;
+                case "/roulette":
+                    User user = (User) session.getAttribute("loggedUser");
 
-            if (path.equals("/register")) {
-                handleRegister(req, res, database);
-                return;
-            }
+                    String numberStr = req.getParameter("number");
+                    String betType = req.getParameter("betType");
+                    String betValue = req.getParameter("betValue");
 
-            if (path.equals("/login")) {
-                handleLogin(req, res, database);
-                return;
-            }
-
-            if (path.equals("/username")) {
-                handleUsername(req, res, database);
-                return;
-            }
-
-            if (path.equals("/roulette")) {
-                User user = (User) session.getAttribute("loggedUser");
-                String numberStr = req.getParameter("number");
-                String choice = req.getParameter("betType");
-                String betStr = req.getParameter("betValue");
-                int newBalance=0;
-                int multiplier;
-                if(betStr != null && !betStr.isBlank()){
-                    int bet = Integer.parseInt(betStr);
-                    if(numberStr != null && !numberStr.isBlank()){
-                        multiplier = roulette(choice, Integer.parseInt(numberStr));
-                    }else{
-                        multiplier = roulette(choice, 0);
-
+                    if (user == null) {
+                        res.sendRedirect("login");
+                        return;
                     }
-                    newBalance=bet*multiplier;
-                    user.addBalance(newBalance);
+
+                    if (betType == null || betType.isBlank() || betValue == null || betValue.isBlank()) {
+                        req.setAttribute("result", "Uzupełnij wszystkie wymagane pola.");
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "roulette.jsp");
+                        return;
+                    }
+
+                    int bet = Integer.parseInt(betValue);
+
+                    if (bet <= 0) {
+                        req.setAttribute("result", "Zakład musi być większy od 0.");
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "roulette.jsp");
+                        return;
+                    }
+
+                    if (bet > user.GetBalance()) {
+                        req.setAttribute("result", "Nie masz tyle coinsów.");
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "roulette.jsp");
+                        return;
+                    }
+
+                    int chosenNumber = 0;
+
+                    if (betType.equals("number")) {
+                        if (numberStr == null || numberStr.isBlank()) {
+                            req.setAttribute("result", "Podaj liczbę od 0 do 36.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "roulette.jsp");
+                            return;
+                        }
+
+                        chosenNumber = Integer.parseInt(numberStr);
+
+                        if (chosenNumber < 0 || chosenNumber > 36) {
+                            req.setAttribute("result", "Liczba musi być od 0 do 36.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "roulette.jsp");
+                            return;
+                        }
+                    }
+
+                    int randomnum = (int)(Math.random() * 37);
+                    int multiplier = roulette(betType, chosenNumber, randomnum);
+
+                    int balanceChange;
+                    String resultMessage;
+
+                    if (multiplier > 0) {
+                        balanceChange = bet * multiplier;
+                        resultMessage = "Wygrałeś " + balanceChange + " coins!";
+                    } else {
+                        balanceChange = -bet;
+                        resultMessage = "Przegrałeś " + bet + " coins.";
+                    }
+
+                    user.addBalance(balanceChange);
                     database.updateUsersBalance(user.GetBalance(), user.GetId());
-                    req.setAttribute("choice", choice);
+
+                    req.setAttribute("loggedUser", user);
+                    req.setAttribute("choice", betType);
                     req.setAttribute("bet", String.valueOf(bet));
-                    req.setAttribute("result", String.valueOf(newBalance));
-                }
-                forward(req, res, "roulette.jsp");
-                return;
+                    req.setAttribute("number", numberStr);
+                    req.setAttribute("rolledNumber", String.valueOf(randomnum));
+                    req.setAttribute("result", resultMessage);
+
+                    session.setAttribute("loggedUser", user);
+                    session.setAttribute("lastRolledNumber", randomnum);
+
+                    forward(req, res, "roulette.jsp");
+                    return;
+                case "/logout":
+
+                    if (session != null) {
+                        session.invalidate();
+                    }
+
+                    res.sendRedirect("login");
+                    return;
+                default:
+                    res.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
             }
-
-            if (path.equals("/logout")) {
-
-                if (session != null) {
-                    session.invalidate();
-                }
-
-                res.sendRedirect("login");
-                return;
-            }
-
-            res.sendError(HttpServletResponse.SC_NOT_FOUND);
-
         } catch (Exception e) {
             e.printStackTrace();
             req.setAttribute("errorMessage", "Wystąpił błąd serwera");
