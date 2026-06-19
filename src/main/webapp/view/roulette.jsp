@@ -96,17 +96,17 @@
                        <% if (user != null) { %> max="<%= user.GetBalance() %>" <% } %>
                        value="<%= bet %>"
                        required>
+                <div class="number-field" id="numberField">
+                    <label for="number">Wybrana liczba</label>
+                    <input type="number"
+                        id="number"
+                        name="number"
+                        min="0"
+                        max="36"
+                        value="<%= number %>">
 
-                <label for="number">Wybrana liczba</label>
-                <input type="number"
-                       id="number"
-                       name="number"
-                       min="0"
-                       max="36"
-                       value="<%= number %>">
-
-                <small>Wypełnij tylko przy zakładzie na dokładny numer.</small>
-
+                    <small>Wypełnij tylko przy zakładzie na dokładny numer.</small>
+                </div>
                 <button type="button" onclick="spinAndSubmit()">
                     Postaw zakład i zakręć
                 </button>
@@ -142,37 +142,104 @@
 <script>
 let rotation = localStorage.getItem("wheelRotation");
 
-if(rotation === null){
+if (rotation === null) {
     rotation = 0;
 } else {
-    rotation = parseInt(rotation);
+    rotation = parseFloat(rotation);
 }
 
 const wheel = document.getElementById("wheel");
+const betTypeSelect = document.getElementById("betType");
+const numberField = document.getElementById("numberField");
+const numberInput = document.getElementById("number");
 
 wheel.style.transform = "rotate(" + rotation + "deg)";
 
 let isSpinning = false;
 
-function spinAndSubmit() {
+// Kolejność liczb na kole europejskim, zaczynając od 0 na górze i idąc zgodnie z ruchem wskazówek zegara
+const wheelNumbers = [
+    0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
+    10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+];
 
-    if(isSpinning){
+const sectorAngle = 360 / 37;
+
+function getRotationForNumber(number) {
+    const index = wheelNumbers.indexOf(number);
+
+    if (index === -1) {
+        return rotation;
+    }
+
+    // Liczba ma trafić pod wskaźnik na górze.
+    // Dlatego obracamy koło przeciwnie o pozycję tej liczby.
+    let targetAngle = -index * sectorAngle;
+
+    // Dodajemy pełne obroty, żeby animacja wyglądała naturalnie.
+    let targetRotation = Math.floor(rotation / 360) * 360 + 360 * 6 + targetAngle;
+
+    // Gdyby wynik był za blisko aktualnej pozycji, dodajemy kolejne obroty.
+    while (targetRotation <= rotation + 720) {
+        targetRotation += 360;
+    }
+
+    return targetRotation;
+}
+function updateNumberField() {
+    if (betTypeSelect.value === "number") {
+        numberField.classList.add("show");
+        numberInput.required = true;
+    } else {
+        numberField.classList.remove("show");
+        numberInput.required = false;
+        numberInput.value = "";
+    }
+}
+
+betTypeSelect.addEventListener("change", updateNumberField);
+
+updateNumberField();
+
+
+function spinAndSubmit() {
+    const form = document.getElementById("rouletteForm");
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
         return;
     }
 
-    isSpinning = true;
+    const betType = document.getElementById("betType").value;
+    const numberInput = document.getElementById("number").value;
 
-    const extraRotation = 360 * 6 + Math.floor(Math.random() * 360);
+    if (betType === "number") {
+        if (numberInput === "" || numberInput < 0 || numberInput > 36) {
+            alert("Przy zakładzie na dokładny numer podaj liczbę od 0 do 36.");
+            return;
+        }
+    }
 
-    rotation += extraRotation;
+    if (isSpinning) {
+        return;
+    }
 
-    wheel.style.transform = "rotate(" + rotation + "deg)";
+    form.submit();
+}
 
-    localStorage.setItem("wheelRotation", rotation);
+// Ta wartość przychodzi z Servletu po POST
+const rolledNumberFromServer = "<%= rolledNumber != null ? rolledNumber : "" %>";
+
+if (rolledNumberFromServer !== "") {
+    const rolledNumber = parseInt(rolledNumberFromServer);
+
+    const targetRotation = getRotationForNumber(rolledNumber);
 
     setTimeout(() => {
-        document.getElementById("rouletteForm").submit();
-    }, 2500);
+        wheel.style.transform = "rotate(" + targetRotation + "deg)";
+        localStorage.setItem("wheelRotation", targetRotation);
+        rotation = targetRotation;
+    }, 200);
 }
 </script>
 

@@ -236,3 +236,10 @@ body {
     font-size: 14px;
     margin-bottom: 0;
 }
+.number-field {
+    display: none;
+}
+
+.number-field.show {
+    display: block;
+}
