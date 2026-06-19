@@ -7,7 +7,7 @@
     if (user == null) {
         user = (User) session.getAttribute("loggedUser");
     }
-
+    
     String choiceBet = (String) request.getAttribute("choice");
     String bet = (String) request.getAttribute("bet");
     String number = (String) request.getAttribute("number");
@@ -93,7 +93,6 @@
                        id="betValue"
                        name="betValue"
                        min="1"
-                       <% if (user != null) { %> max="<%= user.GetBalance() %>" <% } %>
                        value="<%= bet %>"
                        required>
                 <div class="number-field" id="numberField">
@@ -152,7 +151,6 @@ const wheel = document.getElementById("wheel");
 const betTypeSelect = document.getElementById("betType");
 const numberField = document.getElementById("numberField");
 const numberInput = document.getElementById("number");
-
 wheel.style.transform = "rotate(" + rotation + "deg)";
 
 let isSpinning = false;
@@ -212,7 +210,7 @@ function spinAndSubmit() {
 
     const betType = document.getElementById("betType").value;
     const numberInput = document.getElementById("number").value;
-
+    
     if (betType === "number") {
         if (numberInput === "" || numberInput < 0 || numberInput > 36) {
             alert("Przy zakładzie na dokładny numer podaj liczbę od 0 do 36.");

@@ -12,6 +12,7 @@ import static com.example.RouletteMethod.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.util.Random;
 
 import jakarta.servlet.http.*;
 import jakarta.servlet.RequestDispatcher;
@@ -74,6 +75,28 @@ public class server  extends HttpServlet{
 
                 res.sendRedirect("login");
                 return;
+            case "/profil":
+                if(!handleCheck(req,res,session)){
+                    res.sendRedirect("login");
+                    return;
+                }else {
+                    User userObj = (User) session.getAttribute("loggedUser");
+                    req.setAttribute("username", userObj.GetUsername());
+                    req.setAttribute("balance", userObj.GetBalance());
+                }
+
+                forward(req, res, "profile.jsp");
+                return;
+            case "/slots":
+                if(!handleCheck(req,res,session)){
+                    res.sendRedirect("login");
+                    return;
+                }else {
+                    User userObj = (User) session.getAttribute("loggedUser");
+                }
+
+                forward(req, res, "slots.jsp");
+                return;
             default:
                 RequestDispatcher defaultDispatcher = getServletContext().getNamedDispatcher("default");
                 
@@ -96,6 +119,7 @@ public class server  extends HttpServlet{
         String path = uri.substring(context.length());
         HttpSession session = req.getSession();
         PrintWriter out = res.getWriter();
+        User user = (User) session.getAttribute("loggedUser");
         try (Connection conn = Databaseconnection.getConnection()) {
             
             Querysql database = new Querysql(conn);
@@ -110,7 +134,6 @@ public class server  extends HttpServlet{
                     handleUsername(req, res, database);
                     return;
                 case "/roulette":
-                    User user = (User) session.getAttribute("loggedUser");
 
                     String numberStr = req.getParameter("number");
                     String betType = req.getParameter("betType");
@@ -120,16 +143,15 @@ public class server  extends HttpServlet{
                         res.sendRedirect("login");
                         return;
                     }
-
+                    
                     if (betType == null || betType.isBlank() || betValue == null || betValue.isBlank()) {
                         req.setAttribute("result", "Uzupełnij wszystkie wymagane pola.");
                         req.setAttribute("loggedUser", user);
                         forward(req, res, "roulette.jsp");
                         return;
                     }
-
+ 
                     int bet = Integer.parseInt(betValue);
-
                     if (bet <= 0) {
                         req.setAttribute("result", "Zakład musi być większy od 0.");
                         req.setAttribute("loggedUser", user);
@@ -192,6 +214,49 @@ public class server  extends HttpServlet{
                     session.setAttribute("lastRolledNumber", randomnum);
 
                     forward(req, res, "roulette.jsp");
+                    return;
+                case "/slots":
+                    if (user == null) {
+                        res.sendRedirect("login");
+                        return;
+                    }
+                    int betSlot = 10;
+
+                    if (user.GetBalance() < betSlot) {
+                        req.setAttribute("error", "Brak środków! Doładuj konto w profilu.");
+                        forward(req, res, "slots.jsp");
+                        return;
+                    }
+                    String resultSlots="lose";
+                    int winAmountSlots=0;
+                    Random random = new Random();
+                    int slot1 = random.nextInt(7) + 1;
+                    int slot2 = random.nextInt(7) + 1;
+                    int slot3 = random.nextInt(7) + 1;
+                    if (slot1 == slot2 && slot2 == slot3) {
+                        resultSlots = "jackpot";
+                    } else if (slot1 == slot2 || slot2 == slot3 || slot1 == slot3) {
+                        resultSlots = "win";
+                    }
+                    if (resultSlots.equals("lose")){
+                        winAmountSlots=-betSlot;
+
+                    }else if (resultSlots.equals("win")){
+                    
+                        winAmountSlots=betSlot;
+                    } else {
+                    
+                        winAmountSlots=betSlot*10;
+                    }
+                    user.addBalance(winAmountSlots);
+                    database.updateUsersBalance(user.GetBalance(), user.GetId());
+                    req.setAttribute("slot1", slot1);
+                    req.setAttribute("slot2", slot2);
+                    req.setAttribute("slot3", slot3);
+                    req.setAttribute("resultType", resultSlots);
+                    req.setAttribute("winAmount", winAmountSlots);
+                    req.setAttribute("newBalance", user.GetBalance());
+                    forward(req, res, "slots.jsp");
                     return;
                 case "/logout":
 
