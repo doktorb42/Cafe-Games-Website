@@ -68,6 +68,28 @@ public class server  extends HttpServlet{
 
                 forward(req, res, "username.jsp");
                 return;
+            case "/buy-coins":
+                if(!handleCheck(req,res,session)){
+                    res.sendRedirect("login");
+                    return;
+                }else{
+
+                    user = (User) session.getAttribute("loggedUser");
+                }
+                int amountToAdd = 500;
+                int newBalance = user.GetBalance() + amountToAdd;
+                
+                try {
+                    Connection conn = Databaseconnection.getConnection();
+                    Querysql database = new Querysql(conn);
+                    user.addBalance(amountToAdd);
+                    database.updateUsersBalance(newBalance, user.GetId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                res.sendRedirect("profil");
+                return;
+
             case "/logout":
                 if (session != null) {
                     session.invalidate();
@@ -80,9 +102,9 @@ public class server  extends HttpServlet{
                     res.sendRedirect("login");
                     return;
                 }else {
-                    User userObj = (User) session.getAttribute("loggedUser");
-                    req.setAttribute("username", userObj.GetUsername());
-                    req.setAttribute("balance", userObj.GetBalance());
+                    user = (User) session.getAttribute("loggedUser");
+                    req.setAttribute("username", user.GetUsername());
+                    req.setAttribute("balance", user.GetBalance());
                 }
 
                 forward(req, res, "profile.jsp");

@@ -41,7 +41,7 @@
 
                 <div class="info-box">
                     <span class="info-label">Stan konta</span>
-                    <span class="info-value gold"><%= balance %> żetonów</span>
+                    <span class="info-value gold"><%= balance %> coins</span>
                 </div>
 
                 <div class="info-box">
@@ -58,7 +58,7 @@
 
             <div class="profile-actions">
                 <a href="change-password" class="btn">Zmień hasło</a>
-                <a href="buy-coins" class="btn btn-gold">Kup 500 żetonów</a>
+                <a href="buy-coins" class="btn btn-gold">Kup 500 coins</a>
                 <a href="/" class="btn btn-red">Powrót</a>
             </div>
 
