@@ -59,6 +59,11 @@
 
         <div class="machine-card">
 
+            <div class="slot-handle" id="slotHandle">
+                <div class="handle-rod"></div>
+                <div class="handle-ball"></div>
+            </div>
+
             <div class="balance-box">
                 Saldo:
                 <strong id="balanceText"><%= oldBalance %></strong>
@@ -76,7 +81,7 @@
             </div>
 
             <form action="slots" method="post" id="slotsForm">
-                <button type="submit" class="spin-button" id="spinButton">
+                <button type="button" class="spin-button" id="spinButton" onclick="pullHandleAndSpin()">
                     Zakręć za 10 coins
                 </button>
             </form>
@@ -110,7 +115,26 @@
     const messageBox = document.getElementById("messageBox");
     const balanceText = document.getElementById("balanceText");
     const spinButton = document.getElementById("spinButton");
+    const slotsForm = document.getElementById("slotsForm");
+    const slotHandle = document.getElementById("slotHandle");
 
+    function pullHandleAndSpin() {
+        if (spinButton.disabled) {
+            return;
+        }
+
+        spinButton.disabled = true;
+
+        slotHandle.classList.add("pulled");
+
+        setTimeout(() => {
+            slotHandle.classList.remove("pulled");
+        }, 250);
+
+        setTimeout(() => {
+            slotsForm.submit();
+        }, 500);
+    }
     function finalPosition(slotNumber) {
         return -((slotNumber - 1) * symbolHeight);
     }

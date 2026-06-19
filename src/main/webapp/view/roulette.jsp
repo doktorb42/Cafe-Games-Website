@@ -4,20 +4,27 @@
 <%
     User user = (User) request.getAttribute("loggedUser");
 
-    if (user == null) {
-        user = (User) session.getAttribute("loggedUser");
-    }
-    
     String choiceBet = (String) request.getAttribute("choice");
-    String bet = (String) request.getAttribute("bet");
+
+    Object betObj = request.getAttribute("bet");
+    String bet = betObj != null ? betObj.toString() : "0";
+
     String number = (String) request.getAttribute("number");
     String result = (String) request.getAttribute("result");
     String rolledNumber = (String) request.getAttribute("rolledNumber");
 
+    Integer changeBalance = (Integer) request.getAttribute("changeBalance");
+    Integer newBalance = (Integer) request.getAttribute("newBalance");
+
+    boolean hasSpun = rolledNumber != null && !rolledNumber.isBlank();
+
+    int currentBalance = user != null ? user.GetBalance() : 0;
+    int finalBalance = newBalance != null ? newBalance : currentBalance;
+    int oldBalance = hasSpun && changeBalance != null ? finalBalance - changeBalance : currentBalance;
+
     if (choiceBet == null) choiceBet = "";
-    if (bet == null) bet = "";
     if (number == null) number = "";
-    if (result == null) result = "0";
+    if (result == null) result = "";
 %>
 
 <!DOCTYPE html>
@@ -39,7 +46,7 @@
         <% if (user != null) { %>
             <div class="balance-box">
                 <span>Saldo</span>
-                <strong><%= user.GetBalance() %> coins</strong>
+                <strong id="balanceText"><%= oldBalance %> coins</strong>
             </div>
         <% } %>
     </div>
@@ -60,13 +67,10 @@
                  alt="Koło ruletki">
 
             <div class="result-box">
-                <% if (result != null && !result.isBlank()) { %>
-                    <% if (rolledNumber != null) { %>
-                        <span>Wylosowano</span>
-                        <strong><%= rolledNumber %></strong>
-                    <% } %>
-
-                    <p><%= result %></p>
+                <% if (hasSpun) { %>
+                    <span id="rolledLabel">Kręcenie...</span>
+                    <strong id="rolledNumberText">?</strong>
+                    <p id="resultMessage">Koło się kręci...</p>
                 <% } else { %>
                     <span>Wynik</span>
                     <p>Wynik pojawi się po postawieniu zakładu.</p>
@@ -227,17 +231,29 @@ function spinAndSubmit() {
 
 // Ta wartość przychodzi z Servletu po POST
 const rolledNumberFromServer = "<%= rolledNumber != null ? rolledNumber : "" %>";
+const finalBalanceFromServer = <%= finalBalance %>;
+const resultMessageFromServer = "<%= result.replace("\"", "\\\"") %>";
 
 if (rolledNumberFromServer !== "") {
     const rolledNumber = parseInt(rolledNumberFromServer);
-
     const targetRotation = getRotationForNumber(rolledNumber);
 
     setTimeout(() => {
         wheel.style.transform = "rotate(" + targetRotation + "deg)";
+    }, 200);
+
+    wheel.addEventListener("transitionend", function finishSpin() {
         localStorage.setItem("wheelRotation", targetRotation);
         rotation = targetRotation;
-    }, 200);
+
+        document.getElementById("balanceText").textContent = finalBalanceFromServer + " coins";
+
+        document.getElementById("rolledLabel").textContent = "Wylosowano";
+        document.getElementById("rolledNumberText").textContent = rolledNumberFromServer;
+        document.getElementById("resultMessage").textContent = resultMessageFromServer;
+
+        wheel.removeEventListener("transitionend", finishSpin);
+    });
 }
 </script>
 

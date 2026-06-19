@@ -278,3 +278,49 @@ body {
     background: #d10000;
     transform: scale(1.03);
 }
+.slot-handle {
+    position: absolute;
+    right: -55px;
+    top: 95px;
+    width: 60px;
+    height: 190px;
+}
+
+.handle-rod {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 120px;
+    background: linear-gradient(90deg, #555, #cfcfcf, #444);
+    border: 1px solid #222;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.8);
+    transition: height 0.25s ease;
+}
+
+.handle-ball {
+    position: absolute;
+    top: 108px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 48px;
+    background: radial-gradient(circle at 30% 25%, #ff6b6b, #8B0000 65%, #320000);
+    border: 2px solid #D4AF37;
+    border-radius: 50%;
+    box-shadow:
+        0 0 12px rgba(212,175,55,0.45),
+        inset 0 4px 8px rgba(255,255,255,0.25),
+        inset 0 -8px 12px rgba(0,0,0,0.45);
+    transition: top 0.25s ease;
+}
+
+.slot-handle.pulled .handle-rod {
+    height: 150px;
+}
+
+.slot-handle.pulled .handle-ball {
+    top: 138px;
+}

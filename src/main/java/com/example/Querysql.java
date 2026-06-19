@@ -60,7 +60,16 @@ public class Querysql {
     // User//
     /////////
 
+    public void changePassword(User user) throws SQLException {
+            String query = "UPDATE users SET password = ? WHERE username = ?";
+            PreparedStatement ps = conn.prepareStatement(query);
+            
+            ps.setString(1, user.GetPasswordHash()); 
+            ps.setString(2, user.GetUsername());
+            ps.executeUpdate();
+            conn.close();
 
+    }
     public void saveUser(User user) throws SQLException {
         String sql = "INSERT INTO users(login,password,username,balance) VALUES (?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(sql);

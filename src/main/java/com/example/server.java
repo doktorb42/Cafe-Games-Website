@@ -97,6 +97,13 @@ public class server  extends HttpServlet{
 
                 forward(req, res, "slots.jsp");
                 return;
+            case "/change-password":
+                if(!handleCheck(req,res,session)){
+                    res.sendRedirect("login");
+                    return;
+                }
+                req.getSession().getAttribute("loggedUser");
+                forward(req, res, "change-password.jsp");
             default:
                 RequestDispatcher defaultDispatcher = getServletContext().getNamedDispatcher("default");
                 
@@ -205,14 +212,16 @@ public class server  extends HttpServlet{
 
                     req.setAttribute("loggedUser", user);
                     req.setAttribute("choice", betType);
-                    req.setAttribute("bet", String.valueOf(bet));
+                    req.setAttribute("bet", bet);
                     req.setAttribute("number", numberStr);
                     req.setAttribute("rolledNumber", String.valueOf(randomnum));
                     req.setAttribute("result", resultMessage);
 
                     session.setAttribute("loggedUser", user);
                     session.setAttribute("lastRolledNumber", randomnum);
-
+                    req.setAttribute("changeBalance", balanceChange);
+                    req.setAttribute("newBalance", user.GetBalance());
+                    
                     forward(req, res, "roulette.jsp");
                     return;
                 case "/slots":
@@ -258,6 +267,28 @@ public class server  extends HttpServlet{
                     req.setAttribute("newBalance", user.GetBalance());
                     forward(req, res, "slots.jsp");
                     return;
+                case "/change-password":
+                    if (user == null) {
+                        res.sendRedirect("login");
+                        return;
+                    }
+                
+                    String oldPassword = req.getParameter("oldPassword");
+                    String newPassword = req.getParameter("newPassword");
+                    String confirmPassword = req.getParameter("confirmPassword");
+                    if (!user.CheckPassword(oldPassword)) {
+                        req.setAttribute("error", "Aktualne hasło jest niepoprawne!");
+                        forward(req, res, "change-password.jsp");
+                        return;
+                    }
+                    if (!newPassword.equals(confirmPassword)) {
+                        req.setAttribute("error", "Nowe hasła nie są identyczne!");
+                        forward(req, res, "change-password.jsp");
+                        return;
+                    }
+                    user.SetNewPassword(newPassword);
+                    database.changePassword(user);
+                    res.sendRedirect("profil");
                 case "/logout":
 
                     if (session != null) {
