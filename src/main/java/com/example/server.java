@@ -47,7 +47,7 @@ public class server  extends HttpServlet{
                     res.sendRedirect("login");
                     return;
                 }else{
- 
+
                 user = (User) session.getAttribute("loggedUser");
                 }
                 req.setAttribute("loggedUser", user);
