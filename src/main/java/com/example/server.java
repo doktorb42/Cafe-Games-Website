@@ -7,14 +7,18 @@ import static utils.Handleregister.*;
 import static utils.Handleusername.handleUsername;
 import static utils.Gateway.handleCheck;
 import static com.example.RouletteMethod.*;
+import static com.example.BlackjackMethod.*;
 
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import jakarta.servlet.http.*;
+import utils.BlackjackCard;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.*;
@@ -38,10 +42,25 @@ public class server  extends HttpServlet{
                     res.sendRedirect("login");
                     return;
                 }
-                user = (User) session.getAttribute("loggedUser");
-                req.setAttribute("loggedUser", user);
-                forward(req, res, "main.jsp");
-                return;
+                try(Connection conn = Databaseconnection.getConnection()){
+                    user = (User) session.getAttribute("loggedUser");
+                    Querysql database = new Querysql(conn);
+                    String GameName = database.getLastGames(user.GetId());
+                    Integer numGames = database.getNumGames(user.GetId());
+                    Integer numWinGames = database.getNumWinGames(user.GetId());
+                    Integer numLoseGames = database.getNumLoseGames(user.GetId());
+                    req.setAttribute("loggedUser", user);
+                    req.setAttribute("GameName", GameName);
+                    req.setAttribute("numGames", numGames);
+                    req.setAttribute("numWinGames", numWinGames);
+                    req.setAttribute("numLoseGames", numLoseGames);
+                    forward(req, res, "main.jsp");
+                    return;
+                } catch (Exception e){
+                    e.printStackTrace();
+                    req.setAttribute("errorMessage", "Wystąpił błąd serwera");
+                    forward(req, res, "login.jsp");
+                }
 
             case "/roulette":
                 if(!handleCheck(req,res,session)){
@@ -119,6 +138,36 @@ public class server  extends HttpServlet{
 
                 forward(req, res, "slots.jsp");
                 return;
+            case "/blackjack":
+                if (!handleCheck(req, res, session)) {
+                    res.sendRedirect("login");
+                    return;
+                }
+                user = (User) session.getAttribute("loggedUser");
+                req.setAttribute("loggedUser", user);
+
+                forward(req, res, "blackjack.jsp");
+                return;
+            case "/history":
+                if (!handleCheck(req, res, session)) {
+                    res.sendRedirect("login");
+                    return;
+                }
+                user = (User) session.getAttribute("loggedUser");
+                req.setAttribute("loggedUser", user);
+                List<Gamehistory> gamehistory;
+                try{
+                    Connection conn = Databaseconnection.getConnection();
+                    Querysql database = new Querysql(conn);
+                    gamehistory = database.getUsersGameHistory(user.GetId());
+                    req.setAttribute("history", gamehistory);
+
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                forward(req, res, "history.jsp");
+                return;
+
             case "/change-password":
                 if(!handleCheck(req,res,session)){
                     res.sendRedirect("login");
@@ -150,7 +199,7 @@ public class server  extends HttpServlet{
         PrintWriter out = res.getWriter();
         User user = (User) session.getAttribute("loggedUser");
         try (Connection conn = Databaseconnection.getConnection()) {
-            
+            String resultMessageDatabase;
             Querysql database = new Querysql(conn);
             switch (path) {
                 case "/register":
@@ -214,8 +263,8 @@ public class server  extends HttpServlet{
                             return;
                         }
                     }
-
-                    int randomnum = (int)(Math.random() * 37);
+                    Random randomC = new Random();
+                    int randomnum = randomC.nextInt(37);
                     int multiplier = roulette(betType, chosenNumber, randomnum);
 
                     int balanceChange;
@@ -224,9 +273,11 @@ public class server  extends HttpServlet{
                     if (multiplier > 0) {
                         balanceChange = bet * multiplier;
                         resultMessage = "Wygrałeś " + balanceChange + " coins!";
+                        resultMessageDatabase="Wygrałeś!";
                     } else {
                         balanceChange = -bet;
                         resultMessage = "Przegrałeś " + bet + " coins.";
+                        resultMessageDatabase="Przegrałeś...";
                     }
 
                     user.addBalance(balanceChange);
@@ -243,15 +294,197 @@ public class server  extends HttpServlet{
                     session.setAttribute("lastRolledNumber", randomnum);
                     req.setAttribute("changeBalance", balanceChange);
                     req.setAttribute("newBalance", user.GetBalance());
-                    
+                    database.saveGameHistory(user,"Ruletka",bet,resultMessageDatabase,balanceChange);
                     forward(req, res, "roulette.jsp");
                     return;
+
+                case "/blackjack":
+                    if (user == null) {
+                        res.sendRedirect("login");
+                        return;
+                    }
+
+                    String action = req.getParameter("action");
+                    
+                    if (action == null) {
+                        req.setAttribute("error", "Nieprawidłowa akcja.");
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "blackjack.jsp");
+                        return;
+                    }
+                    if (action.equals("start")) {
+                        String betValueBlackjack = req.getParameter("bet");
+
+                        if (betValueBlackjack == null || betValueBlackjack.isBlank()) {
+                            req.setAttribute("error", "Podaj zakład.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "blackjack.jsp");
+                            return;
+                        }
+
+                        int betBlackjack = Integer.parseInt(betValueBlackjack);
+
+                        if (betBlackjack <= 0) {
+                            req.setAttribute("error", "Zakład musi być większy od 0.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "blackjack.jsp");
+                            return;
+                        }
+
+                        if (betBlackjack > user.GetBalance()) {
+                            req.setAttribute("error", "Nie masz tylu coinów.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "blackjack.jsp");
+                            return;
+                        }
+
+                        List<BlackjackCard> deck = createDeck();
+                        List<BlackjackCard> playerHand = new ArrayList<>();
+                        List<BlackjackCard> dealerHand = new ArrayList<>();
+
+                        playerHand.add(drawCard(deck));
+                        dealerHand.add(drawCard(deck));
+                        playerHand.add(drawCard(deck));
+                        dealerHand.add(drawCard(deck));
+
+                        session.setAttribute("blackjackDeck", deck);
+                        session.setAttribute("playerHand", playerHand);
+                        session.setAttribute("dealerHand", dealerHand);
+                        session.setAttribute("blackjackBet", betBlackjack);
+                        session.setAttribute("blackjackFinished", false);
+
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "blackjack.jsp");
+                        return;
+                    }
+                    
+                    @SuppressWarnings("unchecked") List<BlackjackCard> deck = (List<BlackjackCard>) session.getAttribute("blackjackDeck");
+                    @SuppressWarnings("unchecked") List<BlackjackCard> playerHand = (List<BlackjackCard>) session.getAttribute("playerHand");
+                    @SuppressWarnings("unchecked") List<BlackjackCard> dealerHand = (List<BlackjackCard>) session.getAttribute("dealerHand");
+                    Integer betBlackjack = (Integer) session.getAttribute("blackjackBet");
+
+                    if (deck == null || playerHand == null || dealerHand == null || betBlackjack == null) {
+                        req.setAttribute("error", "Najpierw rozpocznij grę.");
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "blackjack.jsp");
+                        return;
+                    }
+                    if (action.equals("hit")) {
+                        playerHand.add(drawCard(deck));
+
+                        int playerScore = calculateScore(playerHand);
+
+                        if (playerScore > 21) {
+                            int change = -betBlackjack;
+
+                            user.addBalance(change);
+                            database.updateUsersBalance(user.GetBalance(), user.GetId());
+                            session.setAttribute("loggedUser", user);
+
+                            req.setAttribute("message", "Przegrałeś! Masz ponad 21.");
+                            req.setAttribute("gameResult", "lose");
+                            session.setAttribute("blackjackFinished", true);
+                        }
+
+                        req.setAttribute("loggedUser", user);
+                        forward(req, res, "blackjack.jsp");
+                        return;
+                    }
+                    if (action.equals("stand")) {
+                        int dealerScore = calculateScore(dealerHand);
+
+                        while (dealerScore < 17) {
+                            dealerHand.add(drawCard(deck));
+                            dealerScore = calculateScore(dealerHand);
+                        }
+
+                        int playerScore = calculateScore(playerHand);
+
+                        int change = 0;
+                        String message;
+                        String gameResult;
+
+                        if (dealerScore > 21) {
+                            change = betBlackjack;
+                            message = "Wygrałeś! Krupier przekroczył 21.";
+                            gameResult = "win";
+                            resultMessageDatabase="Wygrałeś!";
+                        } else if (playerScore > dealerScore) {
+                            change = betBlackjack;
+                            message = "Wygrałeś!";
+                            gameResult = "win";
+                            resultMessageDatabase="Wygrałeś!";
+                        } else if (playerScore < dealerScore) {
+                            change = -betBlackjack;
+                            message = "Przegrałeś.";
+                            gameResult = "lose";
+                            resultMessageDatabase="Przegrałeś...";
+                        } else {
+                            change = 0;
+                            message = "Remis. Zakład zwrócony.";
+                            gameResult = "draw";
+                            resultMessageDatabase="Remis";
+                        }
+
+                        user.addBalance(change);
+                        database.updateUsersBalance(user.GetBalance(), user.GetId());
+                        session.setAttribute("loggedUser", user);
+
+                        req.setAttribute("message", message);
+                        req.setAttribute("gameResult", gameResult);
+                        req.setAttribute("loggedUser", user);
+                        session.setAttribute("blackjackFinished", true);
+                        database.saveGameHistory(user, "Blackjack", betBlackjack, resultMessageDatabase, change);
+                        forward(req, res, "blackjack.jsp");
+                        return;
+                    }
+
+                    if (action.equals("reset")) {
+                        session.removeAttribute("blackjackDeck");
+                        session.removeAttribute("playerHand");
+                        session.removeAttribute("dealerHand");
+                        session.removeAttribute("blackjackBet");
+                        session.removeAttribute("blackjackFinished");
+
+                        res.sendRedirect("blackjack");
+                        return;
+                    }
+
+                    req.setAttribute("error", "Nieznana akcja.");
+                    req.setAttribute("loggedUser", user);
+                    forward(req, res, "blackjack.jsp");
+                    return;
+
+
                 case "/slots":
                     if (user == null) {
                         res.sendRedirect("login");
                         return;
                     }
-                    int betSlot = 10;
+                    String betValueSlot = req.getParameter("betValue");
+                    
+                    if (betValueSlot == null || betValueSlot.isBlank()) {
+                            req.setAttribute("error", "Podaj zakład.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "slots.jsp");
+                            return;
+                        }
+
+                        int betSlot = Integer.parseInt(betValueSlot);
+
+                        if (betSlot <= 0) {
+                            req.setAttribute("error", "Zakład musi być większy od 0.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "slots.jsp");
+                            return;
+                        }
+
+                        if (betSlot > user.GetBalance()) {
+                            req.setAttribute("error", "Nie masz tylu coinów.");
+                            req.setAttribute("loggedUser", user);
+                            forward(req, res, "slots.jsp");
+                            return;
+                        }
 
                     if (user.GetBalance() < betSlot) {
                         req.setAttribute("error", "Brak środków! Doładuj konto w profilu.");
@@ -270,13 +503,14 @@ public class server  extends HttpServlet{
                         resultSlots = "win";
                     }
                     if (resultSlots.equals("lose")){
+                        resultMessageDatabase="Przegrałeś...";
                         winAmountSlots=-betSlot;
 
                     }else if (resultSlots.equals("win")){
-                    
+                        resultMessageDatabase="Wygrałeś!";
                         winAmountSlots=betSlot;
                     } else {
-                    
+                        resultMessageDatabase="Jackpot!!!";
                         winAmountSlots=betSlot*10;
                     }
                     user.addBalance(winAmountSlots);
@@ -287,6 +521,8 @@ public class server  extends HttpServlet{
                     req.setAttribute("resultType", resultSlots);
                     req.setAttribute("winAmount", winAmountSlots);
                     req.setAttribute("newBalance", user.GetBalance());
+                    req.setAttribute("bet", betSlot);
+                    database.saveGameHistory(user, "Jednoręki Bandyta", betSlot, resultMessageDatabase, winAmountSlots);
                     forward(req, res, "slots.jsp");
                     return;
                 case "/change-password":
@@ -311,6 +547,7 @@ public class server  extends HttpServlet{
                     user.SetNewPassword(newPassword);
                     database.changePassword(user);
                     res.sendRedirect("profil");
+                    return;
                 case "/logout":
 
                     if (session != null) {

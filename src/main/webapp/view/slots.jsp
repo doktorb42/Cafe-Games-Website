@@ -11,7 +11,7 @@
     int finalSlot1 = hasSpun ? Integer.parseInt(request.getAttribute("slot1").toString()) : 7;
     int finalSlot2 = hasSpun ? Integer.parseInt(request.getAttribute("slot2").toString()) : 7;
     int finalSlot3 = hasSpun ? Integer.parseInt(request.getAttribute("slot3").toString()) : 7;
-
+    int bet = hasSpun ? Integer.parseInt(request.getAttribute("bet").toString()) : 0;
     String resultType = (String) request.getAttribute("resultType");
     if (resultType == null) resultType = "";
 
@@ -24,6 +24,7 @@
     int oldBalance = hasSpun ? currentBalance - winAmount : currentBalance;
 
     String message = "Postaw zakład i zakręć!";
+    String error = (String) request.getAttribute("error");
 
     if (hasSpun) {
         if ("jackpot".equals(resultType)) {
@@ -80,9 +81,21 @@
                 <%= hasSpun ? "Kręcenie..." : message %>
             </div>
 
-            <form action="slots" method="post" id="slotsForm">
+            <form action="slots" method="post" id="slotsForm"  accept-charset="UTF-8">
+                
+                <label for="betValue">Kwota zakładu</label>
+                <input type="number"
+                       id="betValue"
+                       name="betValue"
+                       min="1"
+                       value="<%= bet %>"
+                       required>
+                
+                <% if (error != null) { %>
+                    <div class="alert-box alert-error"><%= error %></div>
+                <% } %>
                 <button type="button" class="spin-button" id="spinButton" onclick="pullHandleAndSpin()">
-                    Zakręć za 10 coins
+                    Zakręć!
                 </button>
             </form>
 

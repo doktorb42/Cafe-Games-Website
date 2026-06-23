@@ -28,6 +28,12 @@ body {
     text-align: center;
     text-shadow: 0 0 10px rgba(255,215,0,0.35);
 }
+.activity-hint {
+    display: block;
+    margin-top: 8px;
+    color: #cfcfcf;
+    font-size: 13px;
+}
 .inputs {
     display:flex;
     flex-direction:column;
@@ -186,7 +192,8 @@ body {
 
 .balance-box strong,
 .last-game-box strong {
-    font-size:22px;
+    font-size: 20px;
+    line-height: 1.35;
 }
 
 .stats-boxes {

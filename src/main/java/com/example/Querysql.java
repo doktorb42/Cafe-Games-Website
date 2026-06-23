@@ -53,9 +53,84 @@ public class Querysql {
 
             list.add(game);
         }
+        rs.close();
         ps.close();
         return list;
     }
+
+    /////////////////////
+    //// Liczba gier ////
+    /////////////////////
+    public int getNumGames(int userId) throws SQLException{
+        String sql = "SELECT COUNT(user_id) as liczba FROM game_history WHERE user_id=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Integer result = rs.getInt("liczba");
+            ps.close();
+            return result;
+        }
+        ps.close();
+        return 0;
+    }
+    ////////////////////////
+    //// Wygrane gry ////
+    ////////////////////////
+    public int getNumWinGames(int userId) throws SQLException{
+        String sql = "SELECT COUNT(`user_id`) as liczba FROM game_history WHERE user_id=? and balance_change>0";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Integer result = rs.getInt("liczba");
+            ps.close();
+            return result;
+        }
+        ps.close();
+        return 0;
+    }
+    
+
+
+    ////////////////////////
+    //// Przegrane gry ////
+    /////////////////////////
+    public int getNumLoseGames(int userId) throws SQLException{
+        String sql = "SELECT COUNT(`user_id`) as liczba FROM game_history WHERE user_id=? and balance_change<0";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Integer result = rs.getInt("liczba");
+            ps.close();
+            return result;
+        }
+        ps.close();
+        return 0;
+    }
+    
+
+
+    ///////////////////////////
+    //// Ostanita aktywność////
+    ///////////////////////////
+    public String getLastGames(int userId) throws SQLException{
+        String sql = "SELECT id, game_name from game_history WHERE user_id=? ORDER BY id DESC";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            String result = rs.getString("game_name");
+            ps.close();
+            return result;
+        }
+        ps.close();
+        return null;
+    }
+    
+
+
     /////////
     // User//
     /////////

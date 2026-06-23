@@ -1,6 +1,14 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="com.example.User" %>
 
+
+<%
+    Integer numGames = (Integer) request.getAttribute("numGames");
+    Integer numWinGames = (Integer) request.getAttribute("numWinGames");
+    Integer numLoseGames = (Integer) request.getAttribute("numLoseGames");
+    String GameName = (String) request.getAttribute("GameName");
+%>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -43,24 +51,38 @@
 
                     <div class="last-game-box">
                         <span>Ostatnia aktywność</span>
-                        <strong>Powodzenia przy stole 🎰</strong>
+                        <%
+                            String activityMessage;
+
+                            if ("Blackjack".equals(GameName)) {
+                                activityMessage = "Blackjack 🃏";
+                            } else if ("Ruletka".equals(GameName)) {
+                                activityMessage = "Ruletka 🎡";
+                            } else if ("Jednoręki Bandyta".equals(GameName)) {
+                                activityMessage = "Jednoręki Bandyta 🎰";
+                            } else {
+                                activityMessage = "Brak aktywności";
+                            }
+                        %>
+                        <strong><%= activityMessage %></strong></br>
+                        <small class="activity-hint">Ostatnio uruchomiona gra</small>
                     </div>
                 </div>
 
                 <div class="stats-boxes">
                     <div class="stat-card">
                         <span>Rozegrane gry</span>
-                        <strong>21</strong>
+                        <strong><%= numGames %></strong>
                     </div>
 
                     <div class="stat-card">
                         <span>Wygrane</span>
-                        <strong>9</strong>
+                        <strong><%= numWinGames %></strong>
                     </div>
 
                     <div class="stat-card">
                         <span>Przegrane</span>
-                        <strong>12</strong>
+                        <strong><%= numLoseGames %></strong>
                     </div>
                 </div>
 
