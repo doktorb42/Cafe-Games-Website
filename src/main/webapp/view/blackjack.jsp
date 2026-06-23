@@ -82,7 +82,11 @@
                        min="1"
                        max="<%= user != null ? user.GetBalance() : 0 %>"
                        required>
-
+                <% if (user.GetBalance() < 1) {%>
+                    <div class="alert-box alert-error"> Brak ci coinów doładuj je w profilu</div>
+                <% } %>
+        
+                
                 <button type="submit" class="btn btn-gold full-btn">
                     Rozpocznij grę
                 </button>

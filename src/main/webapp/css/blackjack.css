@@ -346,7 +346,7 @@ body {
     text-align: center;
 }
 
-.alert-error {
+.alert-error, .error-message {
     color: #ff4c4c;
     background: rgba(139, 0, 0, 0.25);
     border: 1px solid #8B0000;

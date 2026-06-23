@@ -72,8 +72,14 @@
                     <strong id="rolledNumberText">?</strong>
                     <p id="resultMessage">Koło się kręci...</p>
                 <% } else { %>
-                    <span>Wynik</span>
-                    <p>Wynik pojawi się po postawieniu zakładu.</p>
+                    <% if(user.GetBalance() < 1) { %>
+                        <span>Brak środków</span>
+                        <p>Nie masz wystarczającej ilości coins, aby postawić zakład.</p>
+                    <% } else { %>
+                        <span>Wynik</span>
+                        <p>Wynik pojawi się po postawieniu zakładu.</p>
+                    <% } %>
+
                 <% } %>
             </div>
         </section>

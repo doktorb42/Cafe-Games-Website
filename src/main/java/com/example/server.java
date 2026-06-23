@@ -222,6 +222,7 @@ public class server  extends HttpServlet{
                         return;
                     }
                     
+                    
                     if (betType == null || betType.isBlank() || betValue == null || betValue.isBlank()) {
                         req.setAttribute("result", "Uzupełnij wszystkie wymagane pola.");
                         req.setAttribute("loggedUser", user);
