@@ -552,29 +552,134 @@ Motyw graficzny opiera się na stylu kasynowym. Strony korzystają z ciemnego t�
 
 ## 15. Instrukcja uruchomienia projektu
 
-Aby uruchomić projekt, należy przygotować środowisko:
+Aby uruchomić projekt, należy przygotować odpowiednie środowisko programistyczne.
 
-1. Zainstalować Java JDK 17 lub nowszą.
-2. Zainstalować Apache Maven.
-3. Zainstalować Apache Tomcat obsługujący Jakarta Servlet.
-4. Uruchomić MySQL lub MariaDB.
-5. Utworzyć bazę danych `kasynodb`.
-6. Zaimportować plik `kasynodb.sql`.
-7. Sprawdzić dane połączenia w klasie `Databaseconnection`.
-8. Zbudować projekt poleceniem:
+### 15.1. Wymagania
+
+Do uruchomienia projektu potrzebne są:
+
+1. **Java JDK 17 lub nowsza**
+   JDK jest potrzebne do kompilowania i uruchamiania projektu napisanego w języku Java.
+
+2. **Apache Maven**
+   Maven służy do budowania projektu oraz pobierania zależności określonych w pliku `pom.xml`.
+
+3. **Apache Tomcat 10.1.x**
+   Projekt korzysta z pakietów `jakarta.servlet`, dlatego powinien być uruchamiany na Tomcat 10.1.x. Nie należy używać Tomcat 8.5 z XAMPP, ponieważ ta wersja jest przeznaczona dla starszych aplikacji opartych o `javax.servlet`.
+
+4. **MySQL lub MariaDB**
+   Baza danych jest potrzebna do przechowywania użytkowników, salda oraz historii rozegranych gier.
+
+5. **phpMyAdmin lub inny klient bazy danych**
+   Narzędzie to ułatwia utworzenie bazy danych i zaimportowanie pliku `kasynodb.sql`.
+
+### 15.2. Linki do pobrania
+
+Wymagane narzędzia można pobrać z oficjalnych stron:
+
+* Java JDK 17: `https://adoptium.net/temurin/releases/?version=17`
+* Apache Maven: `https://maven.apache.org/download.cgi`
+* Apache Tomcat 10.1: `https://tomcat.apache.org/download-10.cgi`
+* MySQL Community Server / Installer: `https://dev.mysql.com/downloads/installer/`
+* MariaDB Server: `https://mariadb.org/download/`
+* XAMPP, opcjonalnie tylko do bazy danych i phpMyAdmin: `https://www.apachefriends.org/download.html`
+
+### 15.3. Przygotowanie bazy danych
+
+1. Uruchomić MySQL lub MariaDB.
+2. Utworzyć bazę danych o nazwie:
+
+```sql
+CREATE DATABASE kasynodb;
+```
+
+3. Zaimportować plik:
+
+```text
+kasynodb.sql
+```
+
+4. Sprawdzić, czy po imporcie istnieją tabele:
+
+```text
+users
+game_history
+```
+
+### 15.4. Konfiguracja połączenia z bazą danych
+
+W klasie `Databaseconnection` należy sprawdzić dane połączenia z bazą danych.
+
+Przykładowa konfiguracja:
+
+```java
+private static final String url = "jdbc:mysql://localhost:3306/kasynodb?useUnicode=true&characterEncoding=UTF-8";
+private static final String user = "root";
+private static final String password = "";
+```
+
+Jeżeli baza danych ma inne hasło lub inną nazwę użytkownika, należy zmienić wartości `user` i `password`.
+
+### 15.5. Budowanie projektu
+
+Aby zbudować projekt, należy otworzyć terminal w głównym katalogu projektu, czyli tam, gdzie znajduje się plik `pom.xml`, a następnie wykonać polecenie:
 
 ```bash
 mvn clean package
 ```
 
-9. Wgrać wygenerowany plik `.war` na serwer Tomcat.
-10. Otworzyć aplikację w przeglądarce.
+Po poprawnym zbudowaniu projektu w katalogu `target` powinien pojawić się plik `.war`.
 
-Ponieważ projekt w konfiguracji Mavena ma nazwę wynikową `ROOT`, po wdrożeniu na Tomcat aplikacja może być dostępna pod adresem:
+Ponieważ w konfiguracji Maven projekt ma ustawioną nazwę wynikową `ROOT`, wygenerowany plik może mieć nazwę:
+
+```text
+ROOT.war
+```
+
+### 15.6. Wdrożenie projektu na Tomcat
+
+1. Zatrzymać serwer Tomcat, jeżeli jest uruchomiony.
+2. Skopiować wygenerowany plik:
+
+```text
+target/ROOT.war
+```
+
+3. Wkleić go do katalogu:
+
+```text
+apache-tomcat-10.1.x/webapps/
+```
+
+4. Jeżeli w katalogu `webapps` istnieje stary folder `ROOT` albo stary plik `ROOT.war`, należy je wcześniej usunąć.
+5. Uruchomić Tomcat przez plik:
+
+```text
+startup.bat
+```
+
+znajdujący się w katalogu:
+
+```text
+apache-tomcat-10.1.x/bin/
+```
+
+### 15.7. Uruchomienie aplikacji w przeglądarce
+
+Po uruchomieniu serwera Tomcat aplikacja powinna być dostępna pod adresem:
 
 ```text
 http://localhost:8080/
 ```
+
+Jeżeli aplikacja nie otwiera się poprawnie, należy sprawdzić:
+
+* czy uruchomiony jest Tomcat 10.1.x,
+* czy plik `ROOT.war` znajduje się w katalogu `webapps`,
+* czy baza danych `kasynodb` została utworzona,
+* czy plik `kasynodb.sql` został zaimportowany,
+* czy dane połączenia w `Databaseconnection` są poprawne,
+* czy port `8080` nie jest zajęty przez inny program.
 
 ---
 
